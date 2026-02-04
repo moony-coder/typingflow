@@ -1,0 +1,2187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeMaster Pro | Complete Typing Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Supabase -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <style>
+        /* ==================== CSS RESET & VARIABLES ==================== */
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #0f172a;
+            --darker: #020617;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+            --gray-dark: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --radius: 10px;
+            --radius-lg: 16px;
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            min-height: 100vh;
+            line-height: 1.6;
+            padding-top: 70px;
+        }
+
+        /* ==================== LOADING SCREEN ==================== */
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--darker);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+
+        .loader {
+            text-align: center;
+        }
+
+        .loader-text {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            width: 300px;
+            height: 4px;
+            background: var(--glass-bg);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* ==================== NAVIGATION ==================== */
+        .nav-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            background: rgba(2, 6, 23, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--light);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--gray);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-link:hover {
+            color: var(--light);
+            background: var(--glass-bg);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* ==================== MAIN CONTAINER ==================== */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* ==================== DASHBOARD ==================== */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Mode Selection */
+        .mode-selection {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .mode-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--light);
+        }
+
+        .mode-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .mode-btn {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            color: var(--gray);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .mode-btn:hover {
+            border-color: var(--primary);
+            color: var(--light);
+            transform: translateY(-2px);
+        }
+
+        .mode-btn.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .mode-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Typing Area */
+        .typing-area {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 2rem;
+        }
+
+        .time-selection {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .time-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            color: var(--gray);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .time-btn:hover {
+            border-color: var(--primary);
+            color: var(--light);
+        }
+
+        .time-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .text-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .text-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            line-height: 1.8;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius);
+            border: 1px solid var(--glass-border);
+            min-height: 150px;
+            overflow-wrap: break-word;
+        }
+
+        .char {
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .char.correct {
+            color: var(--secondary);
+        }
+
+        .char.incorrect {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .char.current {
+            background: var(--primary);
+            color: white;
+            padding: 0 2px;
+            border-radius: 3px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .char.next {
+            color: var(--accent);
+        }
+
+        .input-container {
+            position: relative;
+            margin-top: 1rem;
+        }
+
+        #typingInput {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.125rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--glass-border);
+            border-radius: var(--radius);
+            color: var(--light);
+            transition: var(--transition);
+        }
+
+        #typingInput:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .live-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .live-stat {
+            text-align: center;
+        }
+
+        .live-stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .live-stat-label {
+            font-size: 0.875rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius);
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            color: var(--light);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* ==================== GAMES GRID ==================== */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .game-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .game-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+        }
+
+        .game-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .game-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .game-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--light);
+        }
+
+        .game-description {
+            color: var(--gray);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        /* ==================== LEARNING SYSTEM ==================== */
+        .lessons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .lesson-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .lesson-card.completed {
+            border-color: var(--secondary);
+        }
+
+        .lesson-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .lesson-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .lesson-number {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .lesson-status {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        .lesson-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--light);
+            margin-bottom: 0.5rem;
+        }
+
+        .lesson-description {
+            font-size: 0.875rem;
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+
+        /* ==================== TOURNAMENTS ==================== */
+        .tournaments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tournament-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .tournament-card.active {
+            border-color: var(--accent);
+        }
+
+        .tournament-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .tournament-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--light);
+        }
+
+        .tournament-status {
+            padding: 0.25rem 0.75rem;
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--accent);
+            border-radius: var(--radius);
+            font-size: 0.75rem;
+        }
+
+        .tournament-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .tournament-detail {
+            text-align: center;
+        }
+
+        .detail-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        /* ==================== FRIEND CHALLENGES ==================== */
+        .challenges-container {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .challenge-input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            color: var(--light);
+            margin-bottom: 1rem;
+        }
+
+        .challenge-code {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius);
+            font-family: 'JetBrains Mono', monospace;
+            margin: 1rem 0;
+        }
+
+        /* ==================== UTILITY CLASSES ==================== */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center { text-align: center; }
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+        .mt-4 { margin-top: 2rem; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .mb-4 { margin-bottom: 2rem; }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0.75rem 1rem;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+            
+            .main-container {
+                padding: 1rem;
+            }
+            
+            .mode-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .lessons-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tournaments-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ==================== SCROLLBAR ==================== */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--darker);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen">
+        <div class="loader">
+            <div class="loader-text">TypeMaster Pro</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <a href="#" class="logo" data-mode="dashboard">
+            <i class="fas fa-keyboard"></i>
+            <span>TypeMaster</span>
+        </a>
+        
+        <div class="nav-links">
+            <a href="#" class="nav-link active" data-mode="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-link" data-mode="games">
+                <i class="fas fa-gamepad"></i>
+                <span>Games</span>
+            </a>
+            <a href="#" class="nav-link" data-mode="learn">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Learn</span>
+            </a>
+            <a href="#" class="nav-link" data-mode="tournaments">
+                <i class="fas fa-trophy"></i>
+                <span>Tournaments</span>
+            </a>
+            <a href="#" class="nav-link" data-mode="friends">
+                <i class="fas fa-users"></i>
+                <span>Friends</span>
+            </a>
+            <a href="#" class="nav-link" data-mode="profile">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+        
+        <div class="user-menu">
+            <div class="user-avatar" id="userAvatar">?</div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Dashboard -->
+        <div id="dashboard" class="mode-content">
+            <div class="dashboard">
+                <div>
+                    <!-- Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="statWPM">0</div>
+                            <div class="stat-label">Best WPM</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statAccuracy">0%</div>
+                            <div class="stat-label">Accuracy</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statTests">0</div>
+                            <div class="stat-label">Tests Taken</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statRank">#--</div>
+                            <div class="stat-label">Global Rank</div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Start -->
+                    <div class="mode-selection">
+                        <div class="mode-title">Quick Start</div>
+                        <div class="mode-buttons">
+                            <button class="mode-btn active" data-mode="speed">
+                                <i class="mode-icon fas fa-tachometer-alt"></i>
+                                <span>Speed Test</span>
+                            </button>
+                            <button class="mode-btn" data-mode="daily">
+                                <i class="mode-icon fas fa-calendar-day"></i>
+                                <span>Daily Challenge</span>
+                            </button>
+                            <button class="mode-btn" data-mode="practice">
+                                <i class="mode-icon fas fa-keyboard"></i>
+                                <span>Practice</span>
+                            </button>
+                            <button class="mode-btn" data-mode="code">
+                                <i class="mode-icon fas fa-code"></i>
+                                <span>Code Practice</span>
+                            </button>
+                            <button class="mode-btn" data-mode="ghost">
+                                <i class="mode-icon fas fa-ghost"></i>
+                                <span>1v1 Ghost</span>
+                            </button>
+                            <button class="mode-btn" data-mode="custom">
+                                <i class="mode-icon fas fa-edit"></i>
+                                <span>Custom Text</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Typing Area -->
+                    <div class="typing-area">
+                        <!-- Time Selection -->
+                        <div class="time-selection">
+                            <button class="time-btn active" data-time="15">15s</button>
+                            <button class="time-btn" data-time="30">30s</button>
+                            <button class="time-btn" data-time="60">60s</button>
+                            <button class="time-btn" data-time="120">120s</button>
+                        </div>
+
+                        <!-- Text Display -->
+                        <div class="text-container">
+                            <div class="text-display" id="textDisplay">
+                                <!-- Text will appear here -->
+                            </div>
+                        </div>
+
+                        <!-- Input -->
+                        <div class="input-container">
+                            <input type="text" id="typingInput" placeholder="Start typing to begin..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                        </div>
+
+                        <!-- Live Stats -->
+                        <div class="live-stats">
+                            <div class="live-stat">
+                                <div class="live-stat-value" id="liveWPM">0</div>
+                                <div class="live-stat-label">WPM</div>
+                            </div>
+                            <div class="live-stat">
+                                <div class="live-stat-value" id="liveAccuracy">0%</div>
+                                <div class="live-stat-label">Accuracy</div>
+                            </div>
+                            <div class="live-stat">
+                                <div class="live-stat-value" id="liveTime">60</div>
+                                <div class="live-stat-label">Seconds</div>
+                            </div>
+                            <div class="live-stat">
+                                <div class="live-stat-value" id="liveErrors">0</div>
+                                <div class="live-stat-label">Errors</div>
+                            </div>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="controls">
+                            <button class="btn btn-primary" id="startBtn">
+                                <i class="fas fa-play"></i> Start Test
+                            </button>
+                            <button class="btn btn-secondary" id="restartBtn">
+                                <i class="fas fa-redo"></i> Restart
+                            </button>
+                            <button class="btn btn-secondary" id="newTextBtn">
+                                <i class="fas fa-sync"></i> New Text
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <!-- Daily Challenge -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">
+                            <i class="fas fa-calendar-star"></i> Today's Challenge
+                        </div>
+                        <div class="daily-challenge">
+                            <div class="mb-2">
+                                <div class="stat-value" id="dailyBest">0</div>
+                                <div class="stat-label">Your Best Today</div>
+                            </div>
+                            <button class="btn btn-primary" style="width: 100%;" id="startDaily">
+                                <i class="fas fa-play"></i> Start Daily Challenge
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Games -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">
+                            <i class="fas fa-gamepad"></i> Quick Games
+                        </div>
+                        <div class="quick-games">
+                            <button class="btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem;" id="speedRunBtn">
+                                <i class="fas fa-running"></i> Speed Run
+                            </button>
+                            <button class="btn btn-secondary" style="width: 100%;" id="accuracyBtn">
+                                <i class="fas fa-bullseye"></i> Accuracy Challenge
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Live Leaderboard -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">
+                            <i class="fas fa-crown"></i> Live Rankings
+                        </div>
+                        <div class="leaderboard-list" id="liveLeaderboard">
+                            <!-- Will be populated -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Games Section -->
+        <div id="games" class="mode-content hidden">
+            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem;">Games & Challenges</h2>
+            
+            <div class="games-grid">
+                <!-- Daily Challenge -->
+                <div class="game-card" data-game="daily">
+                    <div class="game-header">
+                        <div class="game-icon">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <h3 class="game-title">Daily Challenge</h3>
+                    </div>
+                    <p class="game-description">Compete with everyone on the same text. New challenge every day!</p>
+                    <div class="game-stats">
+                        <div style="font-size: 0.875rem; color: var(--gray);">
+                            <i class="fas fa-users"></i> <span id="dailyPlayers">0</span> players today
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Speed Run -->
+                <div class="game-card" data-game="speedrun">
+                    <div class="game-header">
+                        <div class="game-icon">
+                            <i class="fas fa-running"></i>
+                        </div>
+                        <h3 class="game-title">Speed Run</h3>
+                    </div>
+                    <p class="game-description">Type as many texts as possible in 5 minutes. How fast can you go?</p>
+                    <div class="game-stats">
+                        <div style="font-size: 0.875rem; color: var(--gray);">
+                            <i class="fas fa-clock"></i> 5 minutes
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accuracy Master -->
+                <div class="game-card" data-game="accuracy">
+                    <div class="game-header">
+                        <div class="game-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3 class="game-title">Accuracy Master</h3>
+                    </div>
+                    <p class="game-description">Maintain 95%+ accuracy while typing. Every error resets progress!</p>
+                    <div class="game-stats">
+                        <div style="font-size: 0.875rem; color: var(--gray);">
+                            <i class="fas fa-target"></i> 95% accuracy required
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1v1 Ghost Race -->
+                <div class="game-card" data-game="ghost">
+                    <div class="game-header">
+                        <div class="game-icon">
+                            <i class="fas fa-ghost"></i>
+                        </div>
+                        <h3 class="game-title">1v1 Ghost Race</h3>
+                    </div>
+                    <p class="game-description">Race against a ghost opponent. Choose difficulty level!</p>
+                    <div class="game-stats">
+                        <div style="font-size: 0.875rem; color: var(--gray);">
+                            <i class="fas fa-robot"></i> AI opponent
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Trial -->
+                <div class="game-card" data-game="timetrial">
+                    <div class="game-header">
+                        <div class="game-icon">
+                            <i class="fas fa-stopwatch"></i>
+                        </div>
+                        <h3 class="game-title">Time Trial</h3>
+                    </div>
+                    <p class="game-description">Complete specific text in target time. Beat the clock!</p>
+                    <div class="game-stats">
+                        <div style="font-size: 0.875rem; color: var(--gray);">
+                            <i class="fas fa-hourglass-half"></i> Target time challenge
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Friend Challenge -->
+                <div class="game-card" data-game="friend">
+                    <div class="game-header">
+                        <div class="game-icon">
+                            <i class="fas fa-user-friends"></i>
+                        </div>
+                        <h3 class="game-title">Friend Challenge</h3>
+                    </div>
+                    <p class="game-description">Challenge a friend with a shareable link. Compare scores!</p>
+                    <div class="game-stats">
+                        <div style="font-size: 0.875rem; color: var(--gray);">
+                            <i class="fas fa-link"></i> Shareable link
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Learning System -->
+        <div id="learn" class="mode-content hidden">
+            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem;">Learn to Type</h2>
+            <p style="color: var(--gray); margin-bottom: 2rem;">Complete lessons to improve your typing skills step by step.</p>
+            
+            <div class="lessons-grid" id="lessonsGrid">
+                <!-- Lessons will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Tournaments -->
+        <div id="tournaments" class="mode-content hidden">
+            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem;">Tournaments</h2>
+            
+            <div class="tournaments-grid" id="tournamentsGrid">
+                <!-- Tournaments will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Friends & Challenges -->
+        <div id="friends" class="mode-content hidden">
+            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem;">Friends & Challenges</h2>
+            
+            <div class="challenges-container">
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Create Challenge</h3>
+                <p style="color: var(--gray); margin-bottom: 1.5rem;">Create a challenge and share the link with friends.</p>
+                
+                <button class="btn btn-primary" id="createChallenge">
+                    <i class="fas fa-plus"></i> Create New Challenge
+                </button>
+                
+                <div id="challengeResult" class="hidden mt-3">
+                    <p style="color: var(--gray); margin-bottom: 0.5rem;">Share this link with your friend:</p>
+                    <div class="challenge-code" id="challengeLink">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile -->
+        <div id="profile" class="mode-content hidden">
+            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem;">Your Profile</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="profileWPM">0</div>
+                    <div class="stat-label">Best WPM</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="profileAccuracy">0%</div>
+                    <div class="stat-label">Average Accuracy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="profileTests">0</div>
+                    <div class="stat-label">Total Tests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="profileTime">0h</div>
+                    <div class="stat-label">Practice Time</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Modal -->
+    <div class="modal" id="resultsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Test Complete!</h3>
+                <button class="modal-close" id="closeResults">&times;</button>
+            </div>
+            <div id="resultsContent">
+                <!-- Results will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== SUPABASE CONFIGURATION ====================
+        const SUPABASE_URL = 'https://rwxzmnvtmaeswygyntyz.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_OylMqGWipMv0HWNs65IW3w_6iIXA7Fy';
+        
+        let supabase = null;
+        let isSupabaseConnected = false;
+
+        // ==================== APPLICATION STATE ====================
+        const state = {
+            // User state
+            user: {
+                id: localStorage.getItem('userId') || 'user_' + Math.random().toString(36).substr(2, 9),
+                username: localStorage.getItem('username') || 'Typist_' + Math.floor(Math.random() * 1000),
+                stats: JSON.parse(localStorage.getItem('userStats') || '{}')
+            },
+            
+            // Current typing session
+            currentMode: 'speed',
+            currentGame: null,
+            currentText: '',
+            currentIndex: 0,
+            errors: 0,
+            correctChars: 0,
+            totalChars: 0,
+            startTime: null,
+            endTime: null,
+            isTyping: false,
+            isPaused: false,
+            timer: null,
+            selectedTime: 60,
+            
+            // Games state
+            games: {
+                dailyChallenge: {
+                    completed: false,
+                    bestWPM: 0,
+                    bestAccuracy: 0
+                },
+                speedRun: {
+                    active: false,
+                    timeLeft: 300,
+                    textsCompleted: 0,
+                    totalChars: 0
+                },
+                accuracyChallenge: {
+                    active: false,
+                    streak: 0,
+                    maxStreak: 0
+                }
+            },
+            
+            // Learning state
+            lessons: JSON.parse(localStorage.getItem('lessonsProgress') || '[]'),
+            
+            // Tournaments
+            tournaments: [],
+            
+            // Achievements
+            achievements: JSON.parse(localStorage.getItem('achievements') || '[]')
+        };
+
+        // Initialize user stats if not exists
+        if (!state.user.stats.bestWPM) {
+            state.user.stats = {
+                bestWPM: 0,
+                averageAccuracy: 0,
+                totalTests: 0,
+                totalTime: 0,
+                totalChars: 0,
+                bestDailyWPM: 0,
+                streak: 0,
+                lastPractice: null
+            };
+        }
+
+        // ==================== TEXT DATABASE ====================
+        const textDatabase = {
+            // 200+ Texts for various modes
+            speed: [
+                "The quick brown fox jumps over the lazy dog. This classic pangram uses every letter in the alphabet.",
+                "Programming requires logical thinking and attention to detail. Each line of code must be precise.",
+                "Touch typing improves speed and accuracy with practice. Focus on not looking at the keyboard.",
+                "Artificial intelligence transforms technology through machine learning algorithms.",
+                "Cloud computing allows scalable deployment without managing physical servers.",
+                "Cybersecurity protects systems from digital attacks that aim to access sensitive information.",
+                "Data science combines statistics, computer science, and domain knowledge for insights.",
+                "Web development involves creating websites using HTML, CSS, JavaScript, and frameworks.",
+                "User experience design focuses on creating products that are intuitive and enjoyable.",
+                "Responsive design ensures websites work well on all devices from desktop to mobile.",
+                "The sun sets slowly behind the mountains, painting the sky with shades of orange and purple.",
+                "Music has the power to evoke emotions and memories, connecting people across cultures.",
+                "Learning a new language opens doors to different cultures and ways of thinking.",
+                "Regular exercise improves both physical health and mental well-being significantly.",
+                "Reading books expands knowledge and enhances imagination beyond everyday experiences.",
+                "Cooking requires patience and precision, but the results are always rewarding.",
+                "Travel broadens perspectives and creates unforgettable memories with friends.",
+                "Photography captures moments in time, preserving memories for future generations.",
+                "Gardening teaches patience and care as plants grow slowly over seasons.",
+                "Writing helps organize thoughts and communicate ideas clearly to others."
+            ],
+            
+            quotes: [
+                "The only way to do great work is to love what you do.",
+                "Innovation distinguishes between a leader and a follower.",
+                "Stay hungry, stay foolish.",
+                "Quality is more important than quantity.",
+                "Design is not just what it looks like, but how it works.",
+                "Simple can be harder than complex, but it's worth it.",
+                "Your time is limited, so don't waste it living someone else's life.",
+                "The people who are crazy enough to think they can change the world are the ones who do.",
+                "I'm convinced that about half of what separates successful entrepreneurs is perseverance.",
+                "Sometimes when you innovate, you make mistakes. It is best to admit them quickly."
+            ],
+            
+            code: [
+                "function calculateWPM(characters, seconds) {\n  return Math.round((characters / 5) / (seconds / 60));\n}",
+                "const user = {\n  id: 'unique_id',\n  stats: {\n    wpm: 0,\n    accuracy: 100\n  }\n};",
+                "async function saveResult(result) {\n  try {\n    await fetch('/api/results', {\n      method: 'POST',\n      body: JSON.stringify(result)\n    });\n  } catch (error) {\n    console.error(error);\n  }\n}",
+                "class TypingEngine {\n  constructor(text) {\n    this.text = text;\n    this.position = 0;\n  }\n  \n  processInput(input) {\n    // Process typing input\n  }\n}"
+            ],
+            
+            // Daily challenges (7 days)
+            daily: [
+                "Practice makes perfect when it comes to typing. Regular practice improves both speed and accuracy.",
+                "Typing quickly requires muscle memory. Your fingers learn where keys are through repetition.",
+                "Accuracy matters more than speed. It's better to type slowly without errors than fast with many mistakes.",
+                "Proper finger placement on home row keys helps increase typing efficiency and reduce fatigue.",
+                "Taking breaks during long typing sessions prevents strain and maintains consistent performance.",
+                "Challenging yourself with difficult texts improves overall typing capability over time.",
+                "Consistency in practice leads to gradual improvement and long-term typing mastery."
+            ],
+            
+            // Learning lessons (20 lessons)
+            lessons: [
+                // Lesson 1: Home Row
+                "asdf jkl; asdf jkl; asdf jkl; asdf jkl; asdf jkl; asdf jkl;",
+                // Lesson 2: Home Row words
+                "add all ask dad fall glad has lad sad salad",
+                // Lesson 3: Top Row
+                "qwert yuiop qwert yuiop qwert yuiop qwert yuiop",
+                // Lesson 4: Top Row words
+                "quit quite quote quiver quiz require request query",
+                // Lesson 5: Bottom Row
+                "zxcvb nm,./ zxcvb nm,./ zxcvb nm,./ zxcvb nm,./",
+                // Lesson 6: Bottom Row words
+                "box cox fix mix six vex zoo buzz fizz jazz",
+                // Lesson 7: All letters
+                "the quick brown fox jumps over the lazy dog",
+                // Lesson 8: Common words
+                "that with this from have will your what they know",
+                // Lesson 9: Longer words
+                "experience through different important government",
+                // Lesson 10: Punctuation
+                "Hello, world! How are you? I'm fine, thanks.",
+                // Lesson 11: Numbers
+                "123 456 789 0 12 34 56 78 90 100 200 300",
+                // Lesson 12: Numbers and letters
+                "page1 test2 code3 data4 file5 user6 time7",
+                // Lesson 13: Capital letters
+                "The United States of America Microsoft Google Apple",
+                // Lesson 14: Sentences
+                "The cat sat on the mat. The dog ran in the fog.",
+                // Lesson 15: Paragraph
+                "Learning to type quickly takes practice. Start slowly and focus on accuracy.",
+                // Lesson 16: Programming
+                "let x = 10; const y = 20; function add(a, b) { return a + b; }",
+                // Lesson 17: Email format
+                "Dear John, Thank you for your email. I will respond soon. Best regards, Sarah",
+                // Lesson 18: Special characters
+                "@#$%^&*()_+{}|:\"<>?~`[]\\;',./",
+                // Lesson 19: Speed practice
+                "A quick movement of the enemy will jeopardize six gunboats.",
+                // Lesson 20: Final test
+                "The five boxing wizards jump quickly. Pack my box with five dozen liquor jugs."
+            ]
+        };
+
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializeApp();
+        });
+
+        async function initializeApp() {
+            // Simulate loading
+            simulateLoading();
+            
+            // Initialize Supabase
+            await initSupabase();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Load initial text
+            loadText('speed');
+            
+            // Update UI
+            updateUserInfo();
+            updateStats();
+            loadLessons();
+            loadTournaments();
+            
+            // Setup hotkeys
+            setupHotkeys();
+        }
+
+        function simulateLoading() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                document.getElementById('progressFill').style.width = `${Math.min(progress, 100)}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('loadingScreen').style.opacity = '0';
+                        setTimeout(() => {
+                            document.getElementById('loadingScreen').style.display = 'none';
+                        }, 300);
+                    }, 300);
+                }
+            }, 100);
+        }
+
+        async function initSupabase() {
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                isSupabaseConnected = true;
+                console.log('Supabase connected successfully');
+                
+                // Try to create tables if they don't exist
+                await createTablesIfNeeded();
+                
+            } catch (error) {
+                console.log('Supabase not available, running in offline mode');
+                isSupabaseConnected = false;
+            }
+        }
+
+        async function createTablesIfNeeded() {
+            if (!isSupabaseConnected) return;
+            
+            try {
+                // Try to insert a test record
+                const { error } = await supabase
+                    .from('typing_results')
+                    .insert([{
+                        user_id: state.user.id,
+                        wpm: 0,
+                        accuracy: 0,
+                        errors: 0,
+                        time_seconds: 0,
+                        characters: 0,
+                        mode: 'test',
+                        created_at: new Date().toISOString()
+                    }])
+                    .select();
+                    
+                if (error && error.code === '42P01') {
+                    // Table doesn't exist
+                    console.log('Tables not created yet. Please create them in Supabase dashboard.');
+                    console.log('Required tables: typing_results, users, tournaments, challenges');
+                }
+            } catch (error) {
+                console.log('Error checking tables:', error);
+            }
+        }
+
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-link, .logo').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const mode = e.currentTarget.dataset.mode;
+                    switchMode(mode);
+                });
+            });
+
+            // Mode buttons
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+                    const mode = e.currentTarget.dataset.mode;
+                    state.currentMode = mode;
+                    
+                    if (mode === 'daily') {
+                        startDailyChallenge();
+                    } else if (mode === 'ghost') {
+                        startGhostRace();
+                    } else {
+                        loadText(mode);
+                    }
+                });
+            });
+
+            // Time selection
+            document.querySelectorAll('.time-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+                    state.selectedTime = parseInt(e.currentTarget.dataset.time);
+                    document.getElementById('liveTime').textContent = state.selectedTime;
+                    restartTest();
+                });
+            });
+
+            // Game cards
+            document.querySelectorAll('.game-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    const game = e.currentTarget.dataset.game;
+                    startGame(game);
+                });
+            });
+
+            // Control buttons
+            document.getElementById('startBtn').addEventListener('click', startTest);
+            document.getElementById('restartBtn').addEventListener('click', restartTest);
+            document.getElementById('newTextBtn').addEventListener('click', () => loadText(state.currentMode));
+            
+            // Game buttons
+            document.getElementById('startDaily').addEventListener('click', startDailyChallenge);
+            document.getElementById('speedRunBtn').addEventListener('click', () => startGame('speedrun'));
+            document.getElementById('accuracyBtn').addEventListener('click', () => startGame('accuracy'));
+            document.getElementById('createChallenge').addEventListener('click', createFriendChallenge);
+            
+            // Typing input
+            document.getElementById('typingInput').addEventListener('input', handleTyping);
+            
+            // Modal close
+            document.getElementById('closeResults').addEventListener('click', () => {
+                document.getElementById('resultsModal').classList.remove('active');
+            });
+        }
+
+        function setupHotkeys() {
+            document.addEventListener('keydown', (e) => {
+                // Tab - New text
+                if (e.key === 'Tab' && !e.ctrlKey) {
+                    e.preventDefault();
+                    loadText(state.currentMode);
+                }
+                
+                // Ctrl+Enter - Restart test
+                if (e.ctrlKey && e.key === 'Enter') {
+                    e.preventDefault();
+                    restartTest();
+                }
+                
+                // Esc - Pause/Resume
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    if (state.isTyping) {
+                        togglePause();
+                    }
+                }
+            });
+        }
+
+        // ==================== TYPING ENGINE ====================
+        function loadText(mode) {
+            let textArray = textDatabase[mode] || textDatabase.speed;
+            let text = textArray[Math.floor(Math.random() * textArray.length)];
+            
+            state.currentText = text;
+            state.currentIndex = 0;
+            state.errors = 0;
+            state.correctChars = 0;
+            state.totalChars = 0;
+            
+            renderText(text);
+            document.getElementById('typingInput').value = '';
+            document.getElementById('typingInput').focus();
+            
+            // Reset live stats
+            document.getElementById('liveWPM').textContent = '0';
+            document.getElementById('liveAccuracy').textContent = '0%';
+            document.getElementById('liveErrors').textContent = '0';
+            document.getElementById('liveTime').textContent = state.selectedTime;
+        }
+
+        function renderText(text) {
+            const container = document.getElementById('textDisplay');
+            container.innerHTML = '';
+            
+            text.split('').forEach((char, index) => {
+                const span = document.createElement('span');
+                span.className = 'char';
+                span.textContent = char;
+                span.dataset.index = index;
+                container.appendChild(span);
+            });
+            
+            // Highlight first character
+            const firstChar = container.querySelector('.char[data-index="0"]');
+            if (firstChar) firstChar.classList.add('next');
+        }
+
+        function handleTyping(e) {
+            const input = e.target.value;
+            const text = state.currentText;
+            
+            // Start timer on first keystroke
+            if (!state.isTyping && input.length === 1) {
+                startTest();
+            }
+            
+            if (!state.isTyping || state.isPaused) return;
+            
+            // Update text display
+            updateTextDisplay(input, text);
+            
+            // Calculate stats
+            state.totalChars = input.length;
+            state.correctChars = calculateCorrectChars(input, text);
+            state.errors = input.length - state.correctChars;
+            
+            // Update live stats
+            updateLiveStats();
+            
+            // Check if text is complete
+            if (input.length >= text.length) {
+                completeTest();
+            }
+        }
+
+        function updateTextDisplay(input, text) {
+            const container = document.getElementById('textDisplay');
+            const chars = container.querySelectorAll('.char');
+            
+            // Clear all styling
+            chars.forEach(char => {
+                char.className = 'char';
+            });
+            
+            // Apply new styling
+            for (let i = 0; i < Math.max(input.length, text.length); i++) {
+                if (i < chars.length) {
+                    if (i < input.length) {
+                        if (input[i] === text[i]) {
+                            chars[i].classList.add('correct');
+                        } else {
+                            chars[i].classList.add('incorrect');
+                        }
+                    }
+                    
+                    if (i === input.length) {
+                        chars[i].classList.add('current');
+                    } else if (i === input.length + 1) {
+                        chars[i].classList.add('next');
+                    }
+                }
+            }
+        }
+
+        function calculateCorrectChars(input, text) {
+            let correct = 0;
+            const length = Math.min(input.length, text.length);
+            for (let i = 0; i < length; i++) {
+                if (input[i] === text[i]) {
+                    correct++;
+                }
+            }
+            return correct;
+        }
+
+        function startTest() {
+            if (state.isTyping) return;
+            
+            state.isTyping = true;
+            state.isPaused = false;
+            state.startTime = Date.now();
+            state.endTime = state.startTime + (state.selectedTime * 1000);
+            
+            // Start timer
+            startTimer();
+            
+            // Update button
+            document.getElementById('startBtn').innerHTML = '<i class="fas fa-pause"></i> Pause';
+            document.getElementById('startBtn').onclick = togglePause;
+        }
+
+        function togglePause() {
+            state.isPaused = !state.isPaused;
+            if (state.isPaused) {
+                clearInterval(state.timer);
+                document.getElementById('startBtn').innerHTML = '<i class="fas fa-play"></i> Resume';
+            } else {
+                startTimer();
+                document.getElementById('startBtn').innerHTML = '<i class="fas fa-pause"></i> Pause';
+            }
+        }
+
+        function startTimer() {
+            if (state.timer) clearInterval(state.timer);
+            
+            state.timer = setInterval(() => {
+                if (state.isPaused) return;
+                
+                const now = Date.now();
+                const timeLeft = Math.max(0, state.endTime - now);
+                const secondsLeft = Math.ceil(timeLeft / 1000);
+                
+                document.getElementById('liveTime').textContent = secondsLeft;
+                
+                if (timeLeft <= 0) {
+                    completeTest();
+                }
+            }, 100);
+        }
+
+        function updateLiveStats() {
+            if (!state.startTime) return;
+            
+            const elapsedSeconds = (Date.now() - state.startTime) / 1000;
+            
+            // Calculate WPM
+            const words = state.totalChars / 5;
+            const minutes = elapsedSeconds / 60;
+            const wpm = minutes > 0 ? Math.round(words / minutes) : 0;
+            
+            // Calculate accuracy
+            const accuracy = state.totalChars > 0 ? 
+                Math.round((state.correctChars / state.totalChars) * 100) : 0;
+            
+            // Update UI
+            document.getElementById('liveWPM').textContent = wpm;
+            document.getElementById('liveAccuracy').textContent = `${accuracy}%`;
+            document.getElementById('liveErrors').textContent = state.errors;
+        }
+
+        async function completeTest() {
+            clearInterval(state.timer);
+            state.isTyping = false;
+            
+            const elapsedSeconds = (Date.now() - state.startTime) / 1000;
+            const words = state.totalChars / 5;
+            const minutes = elapsedSeconds / 60;
+            const wpm = minutes > 0 ? Math.round(words / minutes) : 0;
+            const accuracy = state.totalChars > 0 ? 
+                Math.round((state.correctChars / state.totalChars) * 100) : 0;
+            
+            // Update user stats
+            state.user.stats.totalTests++;
+            state.user.stats.totalTime += elapsedSeconds;
+            state.user.stats.totalChars += state.totalChars;
+            
+            if (wpm > state.user.stats.bestWPM) {
+                state.user.stats.bestWPM = wpm;
+            }
+            
+            // Update average accuracy
+            const totalTests = state.user.stats.totalTests;
+            const oldAvg = state.user.stats.averageAccuracy || 0;
+            state.user.stats.averageAccuracy = Math.round(
+                ((oldAvg * (totalTests - 1)) + accuracy) / totalTests
+            );
+            
+            // Save to localStorage
+            localStorage.setItem('userStats', JSON.stringify(state.user.stats));
+            
+            // Update UI
+            updateStats();
+            
+            // Show results
+            showResults({
+                wpm: wpm,
+                accuracy: accuracy,
+                errors: state.errors,
+                time: Math.round(elapsedSeconds),
+                chars: state.totalChars
+            });
+            
+            // Save to Supabase if connected
+            if (isSupabaseConnected) {
+                await saveResultToSupabase({
+                    wpm: wpm,
+                    accuracy: accuracy,
+                    errors: state.errors,
+                    time: elapsedSeconds,
+                    chars: state.totalChars,
+                    mode: state.currentMode
+                });
+            }
+            
+            // Reset button
+            document.getElementById('startBtn').innerHTML = '<i class="fas fa-play"></i> Start Test';
+            document.getElementById('startBtn').onclick = startTest;
+        }
+
+        function restartTest() {
+            clearInterval(state.timer);
+            state.isTyping = false;
+            state.isPaused = false;
+            state.currentIndex = 0;
+            state.errors = 0;
+            state.correctChars = 0;
+            state.totalChars = 0;
+            
+            document.getElementById('typingInput').value = '';
+            document.getElementById('startBtn').innerHTML = '<i class="fas fa-play"></i> Start Test';
+            document.getElementById('startBtn').onclick = startTest;
+            
+            // Reset text display
+            const container = document.getElementById('textDisplay');
+            const chars = container.querySelectorAll('.char');
+            chars.forEach(char => {
+                char.className = 'char';
+            });
+            
+            // Highlight first character
+            if (chars[0]) chars[0].classList.add('next');
+            
+            // Reset live stats
+            document.getElementById('liveWPM').textContent = '0';
+            document.getElementById('liveAccuracy').textContent = '0%';
+            document.getElementById('liveErrors').textContent = '0';
+            document.getElementById('liveTime').textContent = state.selectedTime;
+        }
+
+        function showResults(data) {
+            const resultsContent = document.getElementById('resultsContent');
+            resultsContent.innerHTML = `
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div style="font-size: 3rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">
+                        ${data.wpm} WPM
+                    </div>
+                    <div style="color: var(--gray); margin-bottom: 2rem;">
+                        ${data.accuracy}% accuracy • ${data.errors} errors • ${data.time}s
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                    <div style="background: var(--glass-bg); padding: 1rem; border-radius: var(--radius); text-align: center;">
+                        <div style="font-size: 0.875rem; color: var(--gray); margin-bottom: 0.25rem;">Characters</div>
+                        <div style="font-size: 1.5rem; font-weight: 600; color: var(--light);">${data.chars}</div>
+                    </div>
+                    <div style="background: var(--glass-bg); padding: 1rem; border-radius: var(--radius); text-align: center;">
+                        <div style="font-size: 0.875rem; color: var(--gray); margin-bottom: 0.25rem;">Correct</div>
+                        <div style="font-size: 1.5rem; font-weight: 600; color: var(--light);">${Math.round(data.chars * (data.accuracy/100))}</div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" style="flex: 1;" onclick="loadText(state.currentMode); document.getElementById('resultsModal').classList.remove('active');">
+                        <i class="fas fa-redo"></i> Try Again
+                    </button>
+                    <button class="btn btn-secondary" style="flex: 1;" onclick="document.getElementById('resultsModal').classList.remove('active');">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('resultsModal').classList.add('active');
+        }
+
+        // ==================== GAMES SYSTEM ====================
+        function startGame(game) {
+            state.currentGame = game;
+            
+            switch(game) {
+                case 'daily':
+                    startDailyChallenge();
+                    break;
+                case 'speedrun':
+                    startSpeedRun();
+                    break;
+                case 'accuracy':
+                    startAccuracyChallenge();
+                    break;
+                case 'ghost':
+                    startGhostRace();
+                    break;
+                case 'timetrial':
+                    startTimeTrial();
+                    break;
+                case 'friend':
+                    createFriendChallenge();
+                    break;
+            }
+        }
+
+        function startDailyChallenge() {
+            const today = new Date().getDay();
+            const text = textDatabase.daily[today % textDatabase.daily.length];
+            
+            state.currentMode = 'daily';
+            state.currentText = text;
+            state.selectedTime = 60;
+            
+            loadText('daily');
+            document.getElementById('liveTime').textContent = '60';
+            
+            switchMode('dashboard');
+            
+            // Update UI
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-mode="daily"]').classList.add('active');
+            document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-time="60"]').classList.add('active');
+        }
+
+        function startSpeedRun() {
+            state.games.speedRun = {
+                active: true,
+                timeLeft: 300,
+                textsCompleted: 0,
+                totalChars: 0,
+                totalErrors: 0,
+                startTime: Date.now()
+            };
+            
+            alert('Speed Run started! Type as many texts as possible in 5 minutes. Press OK to begin.');
+            
+            loadText('speed');
+            state.selectedTime = 300;
+            document.getElementById('liveTime').textContent = '300';
+            
+            // Start speed run timer
+            const timer = setInterval(() => {
+                state.games.speedRun.timeLeft--;
+                document.getElementById('liveTime').textContent = state.games.speedRun.timeLeft;
+                
+                if (state.games.speedRun.timeLeft <= 0) {
+                    clearInterval(timer);
+                    endSpeedRun();
+                }
+            }, 1000);
+            
+            // Store timer reference
+            state.games.speedRun.timer = timer;
+        }
+
+        function endSpeedRun() {
+            const results = state.games.speedRun;
+            const elapsedSeconds = 300 - results.timeLeft;
+            const words = results.totalChars / 5;
+            const minutes = elapsedSeconds / 60;
+            const averageWPM = minutes > 0 ? Math.round(words / minutes) : 0;
+            
+            showResults({
+                wpm: averageWPM,
+                accuracy: Math.round((results.totalChars - results.totalErrors) / results.totalChars * 100),
+                errors: results.totalErrors,
+                time: elapsedSeconds,
+                chars: results.totalChars,
+                game: 'Speed Run',
+                textsCompleted: results.textsCompleted
+            });
+            
+            state.games.speedRun.active = false;
+        }
+
+        function startAccuracyChallenge() {
+            alert('Accuracy Challenge: You must maintain 95%+ accuracy. Every error resets your progress!');
+            
+            state.games.accuracyChallenge = {
+                active: true,
+                streak: 0,
+                maxStreak: 0,
+                requiredAccuracy: 95
+            };
+            
+            loadText('speed');
+        }
+
+        function startGhostRace() {
+            const difficulty = prompt('Choose difficulty (easy/medium/hard):', 'medium');
+            const ghostWPM = difficulty === 'easy' ? 40 : difficulty === 'hard' ? 80 : 60;
+            
+            state.currentGame = 'ghost';
+            state.ghostWPM = ghostWPM;
+            
+            alert(`Racing against a ${ghostWPM} WPM ghost! Ready...`);
+            loadText('speed');
+        }
+
+        function startTimeTrial() {
+            const targetTime = parseInt(prompt('Target time in seconds:', '30'));
+            if (targetTime) {
+                state.selectedTime = targetTime;
+                document.getElementById('liveTime').textContent = targetTime;
+                loadText('speed');
+            }
+        }
+
+        // ==================== LEARNING SYSTEM ====================
+        function loadLessons() {
+            if (state.lessons.length === 0) {
+                // Initialize lessons
+                state.lessons = textDatabase.lessons.map((text, index) => ({
+                    id: index + 1,
+                    title: `Lesson ${index + 1}`,
+                    description: getLessonDescription(index),
+                    text: text,
+                    completed: false,
+                    bestWPM: 0,
+                    bestAccuracy: 0
+                }));
+                localStorage.setItem('lessonsProgress', JSON.stringify(state.lessons));
+            }
+            
+            renderLessons();
+        }
+
+        function getLessonDescription(index) {
+            const descriptions = [
+                "Home row keys: asdf jkl;",
+                "Home row words practice",
+                "Top row keys: qwert yuiop",
+                "Top row words practice",
+                "Bottom row keys: zxcvb nm,./",
+                "Bottom row words practice",
+                "All letters: The quick brown fox",
+                "Common English words",
+                "Longer word practice",
+                "Punctuation practice",
+                "Numbers typing",
+                "Numbers and letters mixed",
+                "Capital letters practice",
+                "Complete sentences",
+                "Paragraph typing",
+                "Programming code practice",
+                "Email format practice",
+                "Special characters",
+                "Speed practice",
+                "Final test"
+            ];
+            return descriptions[index] || "Typing practice";
+        }
+
+        function renderLessons() {
+            const container = document.getElementById('lessonsGrid');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            state.lessons.forEach((lesson, index) => {
+                const card = document.createElement('div');
+                card.className = `lesson-card ${lesson.completed ? 'completed' : ''} ${index > 0 && !state.lessons[index-1].completed ? 'locked' : ''}`;
+                card.innerHTML = `
+                    <div class="lesson-header">
+                        <div class="lesson-number">${lesson.id}</div>
+                        <div class="lesson-status">${lesson.completed ? '✓ Completed' : 'Not started'}</div>
+                    </div>
+                    <h4 class="lesson-title">${lesson.title}</h4>
+                    <p class="lesson-description">${lesson.description}</p>
+                    <div class="lesson-stats">
+                        <div style="font-size: 0.875rem; color: var(--gray);">
+                            Best: ${lesson.bestWPM} WPM, ${lesson.bestAccuracy}% accuracy
+                        </div>
+                    </div>
+                    <button class="btn btn-primary mt-2" style="width: 100%;" onclick="startLesson(${index})" ${index > 0 && !state.lessons[index-1].completed ? 'disabled' : ''}>
+                        <i class="fas fa-play"></i> ${lesson.completed ? 'Practice Again' : 'Start Lesson'}
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function startLesson(index) {
+            const lesson = state.lessons[index];
+            state.currentMode = 'lesson';
+            state.currentText = lesson.text;
+            state.currentLesson = index;
+            
+            switchMode('dashboard');
+            loadText('lesson');
+        }
+
+        // ==================== TOURNAMENTS ====================
+        function loadTournaments() {
+            // Create sample tournaments
+            state.tournaments = [
+                {
+                    id: 1,
+                    name: "Weekly Speed Championship",
+                    description: "Compete for the weekly speed title",
+                    startTime: new Date(),
+                    endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                    participants: 45,
+                    status: "active"
+                },
+                {
+                    id: 2,
+                    name: "Accuracy Master Tournament",
+                    description: "Highest accuracy wins",
+                    startTime: new Date(),
+                    endTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+                    participants: 28,
+                    status: "active"
+                },
+                {
+                    id: 3,
+                    name: "Beginner's Cup",
+                    description: "For players under 50 WPM",
+                    startTime: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
+                    endTime: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+                    participants: 15,
+                    status: "upcoming"
+                }
+            ];
+            
+            renderTournaments();
+        }
+
+        function renderTournaments() {
+            const container = document.getElementById('tournamentsGrid');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            state.tournaments.forEach(tournament => {
+                const card = document.createElement('div');
+                card.className = `tournament-card ${tournament.status === 'active' ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="tournament-header">
+                        <h3 class="tournament-title">${tournament.name}</h3>
+                        <div class="tournament-status">${tournament.status}</div>
+                    </div>
+                    <p style="color: var(--gray); margin-bottom: 1rem;">${tournament.description}</p>
+                    <div class="tournament-details">
+                        <div class="tournament-detail">
+                            <div class="detail-value">${tournament.participants}</div>
+                            <div class="detail-label">Participants</div>
+                        </div>
+                        <div class="tournament-detail">
+                            <div class="detail-value">${formatTimeLeft(tournament.endTime)}</div>
+                            <div class="detail-label">Time Left</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="joinTournament(${tournament.id})">
+                        <i class="fas fa-sign-in-alt"></i> Join Tournament
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function formatTimeLeft(endTime) {
+            const diff = endTime - new Date();
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            if (days > 0) return `${days}d ${hours}h`;
+            return `${hours}h`;
+        }
+
+        function joinTournament(tournamentId) {
+            alert(`Joined tournament! Check back later for your position.`);
+        }
+
+        // ==================== FRIEND CHALLENGES ====================
+        function createFriendChallenge() {
+            const challengeCode = Math.random().toString(36).substr(2, 8).toUpperCase();
+            const challengeLink = `${window.location.origin}${window.location.pathname}#challenge=${challengeCode}`;
+            
+            document.getElementById('challengeLink').textContent = challengeLink;
+            document.getElementById('challengeResult').classList.remove('hidden');
+            
+            // Store challenge
+            const challenges = JSON.parse(localStorage.getItem('challenges') || '[]');
+            challenges.push({
+                code: challengeCode,
+                created: new Date().toISOString(),
+                creator: state.user.id
+            });
+            localStorage.setItem('challenges', JSON.stringify(challenges));
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(challengeLink).then(() => {
+                alert('Challenge link copied to clipboard! Share it with your friend.');
+            });
+        }
+
+        // ==================== UI UPDATES ====================
+        function updateUserInfo() {
+            const initials = state.user.username.substring(0, 2).toUpperCase();
+            document.getElementById('userAvatar').textContent = initials || '?';
+        }
+
+        function updateStats() {
+            // Update main stats
+            document.getElementById('statWPM').textContent = Math.round(state.user.stats.bestWPM);
+            document.getElementById('statAccuracy').textContent = `${Math.round(state.user.stats.averageAccuracy)}%`;
+            document.getElementById('statTests').textContent = state.user.stats.totalTests;
+            
+            // Update profile stats
+            document.getElementById('profileWPM').textContent = Math.round(state.user.stats.bestWPM);
+            document.getElementById('profileAccuracy').textContent = `${Math.round(state.user.stats.averageAccuracy)}%`;
+            document.getElementById('profileTests').textContent = state.user.stats.totalTests;
+            document.getElementById('profileTime').textContent = `${Math.round(state.user.stats.totalTime / 60)}m`;
+            
+            // Update daily best
+            document.getElementById('dailyBest').textContent = Math.round(state.user.stats.bestDailyWPM);
+        }
+
+        function switchMode(mode) {
+            // Hide all mode contents
+            document.querySelectorAll('.mode-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show selected mode
+            const target = document.getElementById(mode);
+            if (target) {
+                target.classList.remove('hidden');
+            }
+            
+            // Update active nav link
+            const activeLink = document.querySelector(`.nav-link[data-mode="${mode}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            // Handle mode-specific setup
+            if (mode === 'dashboard') {
+                loadText(state.currentMode);
+            }
+        }
+
+        // ==================== SUPABASE FUNCTIONS ====================
+        async function saveResultToSupabase(result) {
+            if (!isSupabaseConnected) return;
+            
+            try {
+                const { error } = await supabase
+                    .from('typing_results')
+                    .insert([{
+                        user_id: state.user.id,
+                        username: state.user.username,
+                        wpm: result.wpm,
+                        accuracy: result.accuracy,
+                        errors: result.errors,
+                        time_seconds: Math.round(result.time),
+                        characters: result.chars,
+                        mode: result.mode,
+                        created_at: new Date().toISOString()
+                    }]);
+                
+                if (error) throw error;
+            } catch (error) {
+                console.log('Failed to save result to Supabase:', error);
+            }
+        }
+
+        // ==================== GLOBAL FUNCTIONS ====================
+        window.loadText = loadText;
+        window.startTest = startTest;
+        window.restartTest = restartTest;
+        window.switchMode = switchMode;
+        window.startLesson = startLesson;
+        window.joinTournament = joinTournament;
+    </script>
+</body>
+</html>
